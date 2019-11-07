@@ -1,0 +1,5 @@
+House Contract Address| 0xffebe01132bfce3ae01757326fa0b51ef36fee04
+
+register contract address || 0x491e9350cfedc4912ec2efcfd914f27014282b0e
+
+token contract address || 0xfed21ab2993faa0e0b2ab92752428d96370d4889
