@@ -1,10 +1,11 @@
 let getContract = require("./common/contract_com.js").GetContract;
 let  filePath = "./ethererscan/register.json";
-let contractAddress = "0x491e9350cfedc4912ec2efcfd914f27014282b0e";
 let web3 = require("./common/contract_com.js").web3;
 // let AbiCoder = require("web3-eth-abi");
 let Web3EthAbi = require('web3-eth-abi');
-// import {AbiCoder} from 'web3-eth-abi';
+let comCos = require("./common/globe.js");
+// let contractAddress = "0xb7ff5ab3734091aaa440cad83e492e289f49b9e7";
+let contractAddress = comCos.regConAddr;
 let nonceMap = new Map();
 
 async function initReg() {
@@ -24,10 +25,10 @@ async function initReg() {
 // 	let addr2 = "0x5b0ccb1c93064Eb8Fd695a60497240efd94A44ed";
 // 	let priKey2 = "0x502D29356356AE02B7E23ECC851CCA0F21FE9CDADEF1FBAB158EB82611F27229";
 // 	let username2 = "ym";
-	let addr4 = "0x8E0f4A1f3C0DBEA0C73684B49aE4AD02789B3EC4";
-	let priKey4 = "0xFFE962244D80F95197089FE5FF87BE0163D485E7986A7070A498136012FD7B61";
-	let username4 = "login";
-	let pwd = "pwd";
+	// let addr4 = "0x8E0f4A1f3C0DBEA0C73684B49aE4AD02789B3EC4";
+	// let priKey4 = "0xFFE962244D80F95197089FE5FF87BE0163D485E7986A7070A498136012FD7B61";
+	// let username4 = "login";
+	// let pwd = "pwd";
 	// login(con, priKey4, addr4, username4, pwd).then((res, rej) => {
 	// 	console.log(4343, res);
 	// 	isLogin(con, addr4).then(res => {
@@ -74,6 +75,22 @@ function getFalg(contract) {
 	})
 }
 
+
+function isAlreayReg(contract, addr, username) {
+	return new Promise(resolve => {
+  	    contract.methods.isAlreayReg(addr, username).call().then(res => {
+			if (res) {
+				console.log("this user already exist");
+				resolve(res);
+			} else {
+				resolve(false);
+			}
+		}).catch(err => {
+				console.log(err)
+		});
+    });
+}
+
 function isExitUserAddress(contract, addr) {
 	return new Promise(resolve => {
   	    contract.methods.isExitUserAddress(addr).call().then(res => {
@@ -100,75 +117,72 @@ function isLogin(contract, addr) {
 		});
 	});
 }
+// 免费注册链上用户
+function createUser(contract, addr, username, userId, pwd) {
+    return new Promise((resolve, reject) => {
+    	console.log("create user", addr)
+    	isAlreayReg(contract, addr, username).then(res => {
+    		if (!res) {
+    			// const loginFun = contract.methods.createUser(addr, username, userId, pwd);   // 合约需要加入id
+                const loginFun = contract.methods.createUser(addr, username, pwd);
+                const logABI = loginFun.encodeABI();
+                packSendMsg(comCos.regAddr, comCos.regpri, contractAddress, logABI).then(receipt => {                        
+                    console.log("create user rece", receipt);
+                    let [flag, ctx] = decodeLog(contract, receipt, 'CreateUser');
+                    if (flag) {
+                    	resolve({status:flag, data:ctx.transactionHash});
+                    } else {
+                    	resolve({status:false, err:"Create this user fail!"});
+                    }             
+                }).catch(err1 => {
+                  console.log("Create user error");
+                  reject({status:false, err:err1});
+                });
+            } else {
+              resolve({status:false, err:"This address or user name already register"});
+           };
+    	});
+   });
+}
+
+function decodeLog(contract, receipt, eventName) {
+	const eventJsonInterface = contract._jsonInterface.find(
+      o => (o.name === eventName) && o.type === 'event');
+    if (JSON.stringify(receipt.logs) != '[]') {
+      const log = receipt.logs.find(
+        l => l.topics.includes(eventJsonInterface.signature)
+      );
+      let decodeLog = Web3EthAbi.decodeLog(eventJsonInterface.inputs, log.data, log.topics.slice(1))
+        console.log(decodeLog)
+        return [true, receipt];
+    } else {
+      return [false, "Cannt find logs"];
+    }
+}
 // First, judge whether user register
 // If user already register, login directly
 // Or, the user must login firstly.
 function login(contract, privateKey, addr, username, pwd) {
 	return new Promise((resolve, reject) => {
-  	    contract.methods.isExitUserAddress(addr).call().then(res => {
+		isAlreayReg(contract, addr, username).then(res => {
 			if (res) {
 				// console.log("Find:", res);
 				const loginFun = contract.methods.login(addr, username, pwd);
 		        const logABI = loginFun.encodeABI();
-		        packSendMsg(addr, privateKey, contractAddress, logABI).then(receipt => {        			        	
+		        packSendMsg(addr, privateKey, contractAddress, logABI).then(receipt => {  
+		            console.log("Login callback: " ,receipt)      			        	
 		        	if (receipt) {
 		        		console.log("Login success");
-		        		const eventJsonInterface = contract._jsonInterface.find(
-							o => (o.name === 'LoginEvent') && o.type === 'event');
-						if (JSON.stringify(receipt.logs) != '[]') {
-							const log = receipt.logs.find(
-								l => l.topics.includes(eventJsonInterface.signature)
-							)
-							let decodeLog = Web3EthAbi.decodeLog(eventJsonInterface.inputs, log.data, log.topics.slice(1))
-			   				console.log(decodeLog)
-			   				resolve(decodeLog);
-						} else {
-							resolve(false);
-						}
+						resolve(decodeLog(contract, receipt, 'LoginEvent'));   
 		        	}  else {
-						resolve(false);
+						resolve({status:false, data: "Login fail!"});
 					}
-					
 				}).catch(err => {
 					console.log("Already login in");
-					reject(err);
+					reject({status:false, data: err});
 				});
 			} else {
-				console.log("Not find the user,it will directly create the user!");
-				const createFunc = contract.methods.createUser(addr, username, pwd);
-				const createABI = createFunc.encodeABI();
-				packSendMsg(addr, privateKey, contractAddress, createABI).then((receipt, rej) => {
-					console.log("Success create the user");
-					if (receipt.status) {
-						const loginFun = contract.methods.login(addr, username, pwd);
-				        const logABI = loginFun.encodeABI();
-				        packSendMsg(addr, privateKey, contractAddress, logABI).then(receipt => {        			        	
-				        	if (receipt) {
-				        		console.log("Login success");
-				        		const eventJsonInterface = contract._jsonInterface.find(
-									o => (o.name === 'LoginEvent') && o.type === 'event');
-								if (JSON.stringify(receipt.logs) != '[]') {
-									const log = receipt.logs.find(
-										l => l.topics.includes(eventJsonInterface.signature)
-									)
-									let decodeLog = Web3EthAbi.decodeLog(eventJsonInterface.inputs, log.data, log.topics.slice(1))
-					   				console.log(decodeLog)
-					   				resolve(decodeLog);
-								} else {
-									resolve(false);
-								}
-				        	}  else {
-								resolve(false);
-							}
-							
-						}).catch(err => {
-							console.log("Already login in");
-							reject(err);
-						});
-					} else {
-						reject(rej);
-					}
-				});				
+				resolve({status:false, data: "please register!"});			
 			}
 		});
     });
@@ -243,8 +257,10 @@ function packSendMsg(formAddr, privateKey, toAddr, createABI) {
 
 module.exports = {
 	initReg,
+	isAlreayReg,
 	isExitUserAddress,
 	isLogin,
 	login,
-	logout
+	logout,
+	createUser
 }

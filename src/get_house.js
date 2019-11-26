@@ -1,72 +1,73 @@
 let getContract = require("./common/contract_com.js").GetContract;
 let filePath = "./ethererscan/house_abi.json";
-let contractAddress = "0x027014b4a8fa8e49f0ba420a8e0f588c98b4f0da";
+// let contractAddress = "0x027014b4a8fa8e49f0ba420a8e0f588c98b4f0da";
 let web3 = require("./common/contract_com.js").web3;
 let Web3EthAbi = require('web3-eth-abi');
 let comVar = require("./common/globe.js");
 let nonceMap = new Map();
 let RegisterFun = require("./get_register");
 let TokenFun = require("./get_token");
+let contractAddress = comVar.houseConAddr;
 async function initHouseFun() {
 	let contract = await getContract(filePath, contractAddress);
 	return contract;
 }
-initHouseFun().then(con => {
-	let addr = "0xaDCe9984d4d2E3936A0eB6F21a6105217a3E8766";	
-	let priKey = "0x36923250A8BF14292202A7932DA90A3222560E8FF3C0426FC6B6199F1EE29023";
-	let username = "zs";
-	let houseAddr = "It lies in SanFan, the beautiful city!";
-	let des = "It's very beautiful, and it has a lot of fun";
-	let info = "Greate info";
-	let hopeCtx = "Hope you are easygoing";
-	// releaseHouse(con, addr, priKey, houseAddr, 5, des, info, 12, 320000000000, hopeCtx).then(res => {
-	// 	if (res) {
-	// 		console.log(res);
-	// 	}
-	// });
-	// house id : 0x2a43eecd35d6b76aef7c08c9ab761ae366bd19018492fe8de12799ec342ac69f
-	let addr2 = "0x5b0ccb1c93064Eb8Fd695a60497240efd94A44ed";
-	let priKey2 = "0x502D29356356AE02B7E23ECC851CCA0F21FE9CDADEF1FBAB158EB82611F27229";
+// initHouseFun().then(con => {
+// 	let addr = "0xaDCe9984d4d2E3936A0eB6F21a6105217a3E8766";	
+// 	let priKey = "0x36923250A8BF14292202A7932DA90A3222560E8FF3C0426FC6B6199F1EE29023";
+// 	let username = "zs";
+// 	let houseAddr = "It lies in SanFan, the beautiful city!";
+// 	let des = "It's very beautiful, and it has a lot of fun";
+// 	let info = "Greate info";
+// 	let hopeCtx = "Hope you are easygoing";
+// 	// releaseHouse(con, addr, priKey, houseAddr, 5, des, info, 12, 320000000000, hopeCtx).then(res => {
+// 	// 	if (res) {
+// 	// 		console.log(res);
+// 	// 	}
+// 	// });
+// 	// house id : 0x2a43eecd35d6b76aef7c08c9ab761ae366bd19018492fe8de12799ec342ac69f
+// 	let addr2 = "0x5b0ccb1c93064Eb8Fd695a60497240efd94A44ed";
+// 	let priKey2 = "0x502D29356356AE02B7E23ECC851CCA0F21FE9CDADEF1FBAB158EB82611F27229";
 
-	let houseId = "0x94efed96b0fa279522423d1a558ea49dfdc4c17186dadfe59657aa9d73f3f6ff";
-	let realRent = 320000000000;
-	// requestSign(con, addr2, priKey2, houseId, realRent).then(res => {
-	// 	if (res) {
-	// 		console.log(res);
-	// 	}
-	// });
-	let signHowLong = 12;
-	let rental = 320000000000;
-	let yearRent = signHowLong*rental;
-	let username2 = "ym";
-	// signAgreement(con, addr, priKey, houseId, username, signHowLong, rental, yearRent).then(res => {
-	// 	console.log(res)
-	// })
-	let addrChecker = "0x8E0f4A1f3C0DBEA0C73684B49aE4AD02789B3EC4";
-	let priKeyChecker = "0xFFE962244D80F95197089FE5FF87BE0163D485E7986A7070A498136012FD7B61";
-	let punishAmount = 5000000000;
-	let punishAddr = addr;
-	let reason = "Donnt observe the rule2";
-	// checkBreak(con, addrChecker, priKeyChecker, houseId, punishAmount, punishAddr).then(res => {
-	// 	console.log(res)
-	// });
-	// breakContract(con, addr2, priKey2, houseId, reason).then(res => {
+// 	let houseId = "0x94efed96b0fa279522423d1a558ea49dfdc4c17186dadfe59657aa9d73f3f6ff";
+// 	let realRent = 320000000000;
+// 	// requestSign(con, addr2, priKey2, houseId, realRent).then(res => {
+// 	// 	if (res) {
+// 	// 		console.log(res);
+// 	// 	}
+// 	// });
+// 	let signHowLong = 12;
+// 	let rental = 320000000000;
+// 	let yearRent = signHowLong*rental;
+// 	let username2 = "ym";
+// 	// signAgreement(con, addr, priKey, houseId, username, signHowLong, rental, yearRent).then(res => {
+// 	// 	console.log(res)
+// 	// })
+// 	let addrChecker = "0x8E0f4A1f3C0DBEA0C73684B49aE4AD02789B3EC4";
+// 	let priKeyChecker = "0xFFE962244D80F95197089FE5FF87BE0163D485E7986A7070A498136012FD7B61";
+// 	let punishAmount = 5000000000;
+// 	let punishAddr = addr;
+// 	let reason = "Donnt observe the rule2";
+// 	// checkBreak(con, addrChecker, priKeyChecker, houseId, punishAmount, punishAddr).then(res => {
+// 	// 	console.log(res)
+// 	// });
+// 	// breakContract(con, addr2, priKey2, houseId, reason).then(res => {
 
-	// });
-	let amount = 2000000000;
-	// withdraw(con, addr2, priKey2, houseId, amount).then(res => {
+// 	// });
+// 	let amount = 2000000000;
+// 	// withdraw(con, addr2, priKey2, houseId, amount).then(res => {
 
-	// });
-	let ratingIndex = 3;
-	let remark = "It is very good.";
-	// const disRrkAddr = "0x16c0b9cb893BA4392131df01e70F831A07d02687";
-	commentHouse(con, addr2, priKey2, houseId, ratingIndex, remark).then(res => {
+// 	// });
+// 	let ratingIndex = 3;
+// 	let remark = "It is very good.";
+// 	// const disRrkAddr = "0x16c0b9cb893BA4392131df01e70F831A07d02687";
+// 	commentHouse(con, addr2, priKey2, houseId, ratingIndex, remark).then(res => {
 
-	});
-	// getHouseRelaseInfo(con, houseId).then(res => {
-	// 	console.log(res)
-	// })
-});
+// 	});
+// 	// getHouseRelaseInfo(con, houseId).then(res => {
+// 	// 	console.log(res)
+// 	// })
+// });
 
 function checkLogin(addr) {
 	// Must login in first
